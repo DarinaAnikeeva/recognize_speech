@@ -1,6 +1,6 @@
 import logging
 import environs
-import google.cloud.dialogflow_v2 as dialogflow
+from dialogflow_functions import detect_intent_texts
 
 from telegram import Update, ForceReply
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
@@ -21,29 +21,11 @@ def start(update: Update, context: CallbackContext) -> None:
         reply_markup=ForceReply(selective=True),
     )
 
-def detect_intent_texts(session_id, text, language_code):
-    session_client = dialogflow.SessionsClient()
-
-    session = session_client.session_path(project_id, session_id)
-
-    text_input = dialogflow.types.TextInput(
-        text=text, language_code=language_code)
-
-    query_input = dialogflow.types.QueryInput(text=text_input)
-
-    response = session_client.detect_intent(
-        session=session, query_input=query_input)
-    if response.query_result.intent.is_fallback:
-        return None
-
-    answer = response.query_result.fulfillment_text
-    return answer
-
 
 def reply_message(update, context):
     try:
         answer = detect_intent_texts(
-            update.message.chat_id, update.message.text, 'ru')
+            project_id, update.message.chat_id, update.message.text, 'ru')
         logging.info(
             f"message:{update.message.text}, answered: {answer}")
         update.message.reply_text(answer)
