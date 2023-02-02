@@ -26,9 +26,10 @@ def reply_message(update, context):
     try:
         answer = detect_intent_texts(
             project_id, update.message.chat_id, update.message.text, 'ru')
-        logging.info(
-            f"message:{update.message.text}, answered: {answer}")
-        update.message.reply_text(answer)
+        if answer:
+            logging.info(
+                f"message:{update.message.text}, answered: {answer}")
+            update.message.reply_text(answer)
     except:
         logging.exception('detect intent not working')
 

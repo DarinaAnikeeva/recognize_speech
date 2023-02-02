@@ -22,8 +22,9 @@ def receive_message(session_id, project_id):
                 text=event.text,
                 language_code='ru')
 
-            user_id = event.user_id
-            return answer, user_id
+            if answer:
+                send_message(event.user_id, answer)
+
 
 if __name__ == "__main__":
     env = environs.Env()
@@ -36,6 +37,4 @@ if __name__ == "__main__":
     vk_api = vk_session.get_api()
     longpoll = VkLongPoll(vk_session)
 
-    while True:
-        answer, user_id = receive_message(vk_session, project_id)
-        send_message(user_id, answer)
+    receive_message(vk_session, project_id)
