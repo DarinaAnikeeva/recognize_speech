@@ -1,5 +1,4 @@
 import environs
-import json
 
 import google.cloud.dialogflow_v2 as dialogflow
 import requests
