@@ -1,7 +1,7 @@
 import vk_api
 import environs
 import random
-from dialogflow_functions import detect_intent_texts
+from dialogflow_function import detect_intent_texts
 from vk_api.longpoll import VkLongPoll, VkEventType
 
 

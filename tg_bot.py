@@ -1,6 +1,6 @@
 import logging
 import environs
-from dialogflow_functions import detect_intent_texts
+from dialogflow_function import detect_intent_texts
 
 from telegram import Update, ForceReply
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
