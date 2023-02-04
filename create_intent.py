@@ -1,8 +1,13 @@
+import json
 import environs
+import argparse
+import logging
 
+import google.api_core.exceptions
 import google.cloud.dialogflow_v2 as dialogflow
 import requests
 
+logger = logging.getLogger(__name__)
 
 def create_intent(project_id, display_name, training_phrases_parts, message_texts):
     intents_client = dialogflow.IntentsClient()
@@ -26,20 +31,50 @@ def create_intent(project_id, display_name, training_phrases_parts, message_text
 
 
 if __name__=='__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '--json',
+        type=str,
+        help='Локальный путь до файла'
+    )
+    parser.add_argument(
+        '--url',
+        type=str,
+        help="Ссылка до json файла"
+    )
+    args = parser.parse_args()
+
     env = environs.Env()
     env.read_env()
-
     project_id = env.str('PROJECT_ID')
-    url = "https://dvmn.org/media/filer_public/a7/db/a7db66c0-1259-4dac-9726-2d1fa9c44f20/questions.json"
-    response = requests.get(url)
-    response.raise_for_status()
-    response_params = response.json()
 
-    display_name = 'Устройство на работу'
-    answer = response_params[display_name]['answer']
-    questions = response_params[display_name]['questions']
-    create_intent(
-        project_id=project_id,
-        display_name=display_name,
-        training_phrases_parts=questions,
-        message_texts=answer)
+    try:
+        if args.url:
+            url = args.url
+            response = requests.get(url)
+            response.raise_for_status()
+            intents = response.json()
+        elif args.json:
+            with open(args.json, 'r') as file:
+                params = file.read()
+            intents = json.loads(params)
+
+        for display_name in intents:
+            answer = intents[display_name]['answer']
+            questions = intents[display_name]['questions']
+            create_intent(
+                project_id=project_id,
+                display_name=display_name,
+                training_phrases_parts=questions,
+                message_texts=answer)
+
+        print('Complete!')
+    except requests.exceptions.HTTPError as err:
+        logger.error(err)
+        pass
+    except requests.exceptions.ConnectionError as err:
+        logger.error(err)
+        pass
+    except json.decoder.JSONDecodeError as err:
+        logger.error(err)
+        pass
